@@ -40,13 +40,17 @@ class music_cog(commands.Cog):
             except Exception:
                 return False
 
-        print(info['entries'][0]['playlist'])
+        print(info['entries'][0]['fulltitle'])
+        print(info['title'])
+        if 'youtube.com' not in info['title']:
+            info['title'] = info['entries'][0]['original_url']
+
         #print(info['entries'][0]['original_url'])
         #print(info['entries'][0]['webpage_url'])
         ##print(info['original_url'])
-        return {'source': info['entries'][0]['playlist'], 'title': info['title']}
+        return {'source': info['title'], 'title': info['entries'][0]['fulltitle']}
 
-    def play_next(self):
+    def play_next(self, ctx):
         if len(self.music_queue) > 0:
             self.is_playing = True
 
@@ -62,22 +66,23 @@ class music_cog(commands.Cog):
 
             #self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
             self.vc.stop()
-            self.vc.play.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="temp_audio.webm"), after=lambda e: self.play_next())
+            self.vc.play.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="temp_audio.webm"), after=lambda e: self.play_next(ctx))
         else:
             self.is_playing = False
 
     # infinite loop checking
-    def play_music(self, ctx):
+    async def play_music(self, ctx):
         print('3')
         if len(self.music_queue) > 0:
             self.is_playing = True
 
             m_url = self.music_queue[0][0]
-            print(self.music_queue)
+            print(m_url['source'])
 
-            yt = YouTube(m_url)
+            yt = YouTube(m_url['source'])
             audio_stream = yt.streams.filter(only_audio=True).first()
             audio_stream.download(filename="temp_audio.webm")
+
 
             # try to connect to voice channel if you are not already connected
 
@@ -87,10 +92,12 @@ class music_cog(commands.Cog):
             voice_channel = server.voice_client
             #voice_channel.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
             self.vc.stop()
-            self.vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="temp_audio.webm"), after=lambda e: self.play_next())
+            self.vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="temp_audio.webm"), after=lambda e: self.play_next(ctx))
             print('6')
         else:
             self.is_playing = False
+
+        await asyncio.sleep(5)
 
     @commands.command(name="play", aliases=["p", "playing"], help="Plays a selected song from youtube")
     async def play(self, ctx, *args):
@@ -148,6 +155,7 @@ class music_cog(commands.Cog):
 
     @commands.command(name="skip", aliases=["s"], help="Skips the current song being played")
     async def skip(self, ctx):
+        await ctx.message.delete()
         if self.vc != None and self.vc:
             self.vc.stop()
             # try to play next in the queue if it exists
@@ -155,6 +163,7 @@ class music_cog(commands.Cog):
 
     @commands.command(name="queue", aliases=["q"], help="Displays the current songs in queue")
     async def queue(self, ctx):
+        await ctx.message.delete()
         retval = ""
         for i in range(0, len(self.music_queue)):
             # display a max of 5 songs in the current queue
@@ -164,7 +173,7 @@ class music_cog(commands.Cog):
         if retval != "":
             await ctx.send(retval)
         else:
-            await ctx.send("Nic tu nemam svině")
+            await ctx.send("Nic tu nemam ty svině")
 
     @commands.command(name="clear", aliases=["c", "bin"], help="Stops the music and clears the queue")
     async def clear(self, ctx):

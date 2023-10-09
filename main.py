@@ -13,8 +13,8 @@ bot = commands.Bot(command_prefix='.', intents=intents)
 bot.remove_command('help')
 
 async def setup():
-    bot.add_cog(help_cog(bot))
-    bot.add_cog(music_cog(bot))
+    await bot.add_cog(help_cog(bot))
+    await bot.add_cog(music_cog(bot))
 
 @bot.event
 async def on_ready():
@@ -22,4 +22,4 @@ async def on_ready():
     await setup()
 
 #start the bot with our token
-bot.run("MTE2MDY2MDQyODQ1MjUyODE3MA.GhnmNM.Tas4RxJ6vzhuEZ7BHJrObdy9QKmXpyAN-FqKrc")
+bot.run("")
