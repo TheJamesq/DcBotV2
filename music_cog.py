@@ -57,7 +57,7 @@ class music_cog(commands.Cog):
             # get the first url
             m_url = self.music_queue[0][0]
 
-            yt = YouTube(m_url)
+            yt = YouTube(m_url['source'])
             audio_stream = yt.streams.filter(only_audio=True).first()
             audio_stream.download(filename="temp_audio.webm")
 
