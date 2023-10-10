@@ -72,7 +72,6 @@ class music_cog(commands.Cog):
 
     # infinite loop checking
     async def play_music(self, ctx):
-        print('3')
         if len(self.music_queue) > 0:
             self.is_playing = True
 
@@ -93,7 +92,6 @@ class music_cog(commands.Cog):
             #voice_channel.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTIONS), after=lambda e: self.play_next())
             self.vc.stop()
             self.vc.play(discord.FFmpegPCMAudio(executable="ffmpeg", source="temp_audio.webm"), after=lambda e: self.play_next(ctx))
-            print('6')
         else:
             self.is_playing = False
 
@@ -118,25 +116,21 @@ class music_cog(commands.Cog):
             else:
                 # await ctx.send("Song added to the queue")
                 self.music_queue.append([song, voice_channel])
-                print('1')
                 if self.vc == None or not self.vc.is_connected():
-                    print('4')
                     self.vc = await voice_channel.connect()
-                    print('4.4')
                     # in case we fail to connect
                     if self.vc == None:
                         await ctx.send("Nemůžu se připojit mrdko")
                         return
                 else:
-                    print('4.2')
                     await self.vc.move_to(self.music_queue[0][1])
 
                 if self.is_playing == False:
-                    print('2')
                     await self.play_music(ctx)
 
     @commands.command(name="pause", help="Pauses the current song being played")
     async def pause(self, ctx, *args):
+        await ctx.message.delete()
         if self.is_playing:
             self.is_playing = False
             self.is_paused = True
@@ -148,6 +142,7 @@ class music_cog(commands.Cog):
 
     @commands.command(name="resume", aliases=["r"], help="Resumes playing with the discord bot")
     async def resume(self, ctx, *args):
+        await ctx.message.delete()
         if self.is_paused:
             self.is_paused = False
             self.is_playing = True
@@ -177,13 +172,14 @@ class music_cog(commands.Cog):
 
     @commands.command(name="clear", aliases=["c", "bin"], help="Stops the music and clears the queue")
     async def clear(self, ctx):
+        await ctx.message.delete()
         if self.vc != None and self.is_playing:
             self.vc.stop()
         self.music_queue = []
-        await ctx.send("Vyčistil jsem")
 
     @commands.command(name="leave", aliases=["disconnect", "l", "d"], help="Kick the bot from VC")
     async def dc(self, ctx):
+        await ctx.message.delete()
         self.is_playing = False
         self.is_paused = False
         await self.vc.disconnect()
